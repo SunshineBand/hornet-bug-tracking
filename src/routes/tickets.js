@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/something', (req, res, next) => {
-  res.send('hello to the new route')
+router.get('/', (req, res, next) => {
+  // sends back all tickets
+  
 })
 
 module.exports = router;
