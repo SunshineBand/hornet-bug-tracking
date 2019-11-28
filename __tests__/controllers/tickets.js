@@ -1,6 +1,6 @@
-const { getTickets } = require('../../src/controllers/tickets.js');
+const { index } = require('../../src/controllers/tickets.js');
 const Ticket = require('../../src/models/Ticket');
-const ticketMock = require('../../__mocks__/tickets');
+const ticketMockDatabase = require('../../__mocks__/tickets');
 
 jest.mock('../../src/models/Ticket', () => {
   return {
@@ -8,25 +8,48 @@ jest.mock('../../src/models/Ticket', () => {
   }
 });
 
-Ticket.find.mockReturnValue(ticketMock);
+Ticket.find.mockReturnValue(ticketMockDatabase);
 
 describe('ticket controller', () => {
 
-  describe('getTickets', () => {
+  describe('index', () => {
 
     it('exists', () => {
-      expect(getTickets).toBeDefined();
+      expect(index).toBeDefined();
     })
 
-    const result = getTickets();
+    it('returns a promise', async () => {
+      const result = index();
+      expect(result).toBeInstanceOf(Promise);
+    })
 
-    it('returns some data', () => {
+    it('contains some array data', async done => {
+      expect.assertions(2);
+      const result = await index();
       expect(result).toBeDefined();
+      expect(result).toBeInstanceOf(Array);
+      done();
     })
 
-    it('returns an array of tickets', () => {
-      Ticket.find = jest.fn().mockReturnThis();
-      expect(result).toBeInstanceOf(Array);
+    it('throws an error when needed', async () => {
+      expect.assertions(1);
+
+      jest.mock('../../src/models/Ticket', () => {
+        return {
+          find: jest.fn()
+        }
+      });
+      Ticket.find.mockImplementation(() => {
+        throw new Error('Some error');
+      })
+
+      try {
+        const errorResult = await index();
+        expect(errorResult).toBeUndefined();
+      }
+      catch (err) {
+        expect(err).toBeDefined();
+      }
     })
   })
 })
